@@ -1,0 +1,16 @@
+log4j.rootCategory=DEBUG, rootAppender
+log4j.appender.rootAppender=org.apache.log4j.ConsoleAppender
+log4j.appender.rootAppender.layout=org.apache.log4j.BasicLayout
+
+log4j.category.log_sub1=NOTICE, A1
+log4j.category.log_sub1.log_sub2=NOTICE, A2
+log4j.additivity.category.log_sub1=false
+              
+log4j.appender.A1=org.apache.log4j.FileAppender
+log4j.appender.A1.fileName=log4cpp_inited.log
+log4j.appender.A1.layout=org.apache.log4j.PatternLayout
+log4j.appender.A1.layout.ConversionPattern=%n %d [%t] %-5p %c - %m%n%n%n
+       
+log4j.appender.A2=org.apache.log4j.ConsoleAppender
+log4j.appender.A2.layout=org.apache.log4j.PatternLayout
+log4j.appender.A2.layout.ConversionPattern=%d [%t] %-5p %c - %m%n
