@@ -5,8 +5,8 @@ CXXFLAGS = -fPIC
 LDFLAGS = -shared
 SOURCES= ./DB.cc
 OBJECTS= $(SOURCES:.cc=.o)
-LINKFLAGS= -lsqlite3
-TARGET  = dfor.so
+LINKFLAGS= -lsqlite3 -llog4cpp
+TARGET  = libdfor.so
 # Default compile
 all: $(TARGET)
 

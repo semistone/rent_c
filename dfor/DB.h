@@ -3,6 +3,7 @@
 #include <boost/shared_ptr.hpp>
 #include <sqlite3.h>
 #include <string>
+#include "log4cpp/Category.hh"
 
 namespace dfor{
 
@@ -18,7 +19,7 @@ public:
 
 class DB{
 public:
-    DB(std::string& dbfile);
+    DB(const std::string& dbfile);
     bool create();
     int insert(HostRecord& record);
     int update(std::string& host, int status);
@@ -26,6 +27,7 @@ public:
     ~DB();
 private:
     sqlite3 *db;
+    static log4cpp::Category* logger;
 };
 };// namespace c2c
 #endif
