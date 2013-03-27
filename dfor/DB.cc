@@ -29,9 +29,24 @@ DB::create(){
     int ret = sqlite3_exec(db, CREATESQL.c_str(), 0, 0, &errMsg);
     return ret == SQLITE_OK;
 }
+
+int 
+DB::insert(HostRecord& record){
+    sqlite3_stmt *stmt;
+    if (sqlite3_prepare(db, 
+                        "insert into HOST (NAME,IP,STATUS,MODIFIED)values (?, ?, 0, ?)",  // stmt
+                        -1, // If than zero, then stmt is read up to the first nul terminator
+                        &stmt,
+                        0  // Pointer to unused portion of stmt
+                       ) != SQLITE_OK){
+        return 0;
+    }
+    return 1;
+}
 /**
  * close sqlite
  */
 DB::~DB(){
+    this->logger->info("close database");
     sqlite3_close(this->db);
 }
