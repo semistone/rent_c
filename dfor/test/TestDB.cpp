@@ -26,6 +26,7 @@ class TestDB: public CppUnit::TestFixture
 {
     CPPUNIT_TEST_SUITE(TestDB);
     CPPUNIT_TEST(testCreate);
+    CPPUNIT_TEST(testQuery);
     CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -34,6 +35,7 @@ public:
 
 protected:
     void testCreate(void);
+    void testQuery(void);
 
 private:
     DB *test;
@@ -45,6 +47,20 @@ void
 TestDB::testCreate(void)
 {
     test->create();
+}
+
+void 
+TestDB::testQuery(void)
+{
+    try{
+        HostRecord host = HostRecord(std::string("localhost"), std::string("127.0.0.1"), 1, (long)0);
+        int ret = test->insert(host);
+        //printf("insert result %d\n", ret);
+        std::string ip = test->query("localhost", FAILOVER);
+        //printf(ip.c_str());
+    }catch(std::runtime_error& e){
+        printf(e.what());    
+    }
 }
 
 void TestDB::setUp(void)

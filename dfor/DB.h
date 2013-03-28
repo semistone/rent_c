@@ -6,14 +6,21 @@
 #include "log4cpp/Category.hh"
 
 namespace dfor{
+typedef enum{
+    RANDOM,
+    ROUND_ROBIN,
+    FAILOVER,
+    WEIGHT
+} QueryMode;
 
 class HostRecord{
 public:
     int id;
-    std::string host;
+    std::string name;
     std::string ip;
     int status;
     long modified; 
+    HostRecord(const std::string& name, const std::string& ip, int status, long modified);
 };
 
 
@@ -23,11 +30,12 @@ public:
     bool create();
     int insert(HostRecord& record);
     int update(std::string& host, int status);
-    int deleteRecord(int id);
+    std::string query(const std::string& name, const QueryMode mode);
     ~DB();
 private:
     sqlite3 *db;
     static log4cpp::Category* logger;
+    std::string failOver(const std::string& name);
 };
 };// namespace c2c
 #endif
