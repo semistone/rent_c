@@ -3,7 +3,7 @@ FLAGS = -I./
 CXXFLAGS = -fPIC
 #CFLAGS = -fPIC -g $(INCLUDES)
 LDFLAGS = -shared
-SOURCES= ./DB.cc
+SOURCES= ./DB.cc ./Hook.cc
 OBJECTS= $(SOURCES:.cc=.o)
 LINKFLAGS= -lsqlite3 -llog4cpp
 TARGET  = libdfor.so
