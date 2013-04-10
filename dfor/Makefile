@@ -1,17 +1,16 @@
 CC = gcc
-FLAGS = -I./
+#FLAGS = 
 CXXFLAGS = -fPIC
 #CFLAGS = -fPIC -g $(INCLUDES)
-LDFLAGS = -shared
+LDFLAGS = -shared -ldl   -lsqlite3 -llog4cpp
 SOURCES= ./DB.cc ./Hook.cc
 OBJECTS= $(SOURCES:.cc=.o)
-LINKFLAGS= -lsqlite3 -llog4cpp
 TARGET  = libdfor.so
 # Default compile
 all: $(TARGET)
 
 $(TARGET): $(OBJECTS)
-	$(CC) $(FLAGS) $(CFLAGS) $(LINKFLAGS) $(LDFLAGS) -o $(TARGET) $(OBJECTS)
+	$(CC) $(FLAGS) $(CFLAGS) $(LDFLAGS) -o $(TARGET) $(OBJECTS)
 
 clean:
 	rm *.o *.so
