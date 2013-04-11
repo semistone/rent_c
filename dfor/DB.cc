@@ -95,24 +95,11 @@ DB::updateCount(std::string& name, std::string& ip){
 }
 
 /**
- *
- *
- */
-std::string
-DB::query(const std::string& name, const QueryMode mode){
-    switch(mode){
-        case FAILOVER: 
-            return failOver(name);
-            break;
-    }
-}
-
-/**
  * select by weight
  *
  */
 std::string
-DB::failOver(const std::string& name){
+DB::query(const std::string& name){
     sqlite3_stmt *stmt;
     if (sqlite3_prepare(db, 
                         "select IP from HOST where STATUS='1' and NAME=? order by COUNT/WEIGHT,IP asc limit 1",  // stmt

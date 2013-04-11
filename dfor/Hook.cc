@@ -34,7 +34,7 @@ int getaddrinfo(const char *node, const char *service, const struct addrinfo *hi
         db = new dfor::DB("/var/run/dfor/cache.db");
     }
     std::string hostname = std::string(node);
-    std::string ip = db->query(hostname, dfor::FAILOVER);
+    std::string ip = db->query(hostname);
     if (ip == "") {
         return (*orig_getaddrinfo)(node,service,hints,res);
     } else {
