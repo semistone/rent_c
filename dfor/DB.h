@@ -30,6 +30,7 @@ public:
     bool create();
     int insert(HostRecord& record);
     int update(std::string& host, int status);
+    int updateCount(std::string& name, std::string& ip);
     std::string query(const std::string& name, const QueryMode mode);
     ~DB();
 private:

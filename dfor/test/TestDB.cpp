@@ -57,6 +57,7 @@ TestDB::testQuery(void)
         int ret = test->insert(host);
         //printf("insert result %d\n", ret);
         std::string ip = test->query("localhost", FAILOVER);
+        ret = test->updateCount(host.name, host.ip);
         //printf(ip.c_str());
     }catch(std::runtime_error& e){
         printf(e.what());    

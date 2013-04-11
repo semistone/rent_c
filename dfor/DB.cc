@@ -9,6 +9,8 @@ static std::string CREATESQL = "CREATE TABLE HOST("
                                "IP   VARCHAR(16),"
                                "STATUS INTEGER,"
                                "WEIGHT INTEGER,"
+                               "COUNT INTEGER,"
+                               "LAST_READ_TIME INTEGER,"
                                "MODIFIED INTEGER)";
 static std::string CREATEINDEX = "create unique index UNI_IDX_HOST_NAME_IP on HOST(NAME,IP)";
 
@@ -67,6 +69,31 @@ DB::insert(HostRecord& record){
     }
 }
 
+int
+DB::updateCount(std::string& name, std::string& ip){
+    sqlite3_stmt *stmt;
+    if (sqlite3_prepare(db, 
+                        "update HOST set COUNT=COUNT+1,LAST_READ_TIME=? where NAME=? and IP=?",  // stmt
+                        -1, // If than zero, then stmt is read up to the first nul terminator
+                        &stmt,
+                        0  // Pointer to unused portion of stmt
+                       ) != SQLITE_OK){
+        return 0;
+    }
+    time_t curtime = time (NULL);
+    sqlite3_bind_int(stmt, 1, (int)curtime);
+    sqlite3_bind_text(stmt, 2, name.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 3, ip.c_str(), -1, SQLITE_STATIC);
+    if(sqlite3_step(stmt) == SQLITE_DONE){
+        sqlite3_finalize(stmt);
+        return 1;
+    } else {
+        sqlite3_finalize(stmt);
+        return 0;
+    }
+
+}
+
 /**
  *
  *
@@ -88,7 +115,7 @@ std::string
 DB::failOver(const std::string& name){
     sqlite3_stmt *stmt;
     if (sqlite3_prepare(db, 
-                        "select IP from HOST where STATUS='1' and NAME=? order by WEIGHT desc limit 1",  // stmt
+                        "select IP from HOST where STATUS='1' and NAME=? order by COUNT/WEIGHT,IP asc limit 1",  // stmt
                         -1, // If than zero, then stmt is read up to the first nul terminator
                         &stmt,
                         0  // Pointer to unused portion of stmt

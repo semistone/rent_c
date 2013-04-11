@@ -33,7 +33,8 @@ int getaddrinfo(const char *node, const char *service, const struct addrinfo *hi
     if (db == NULL) {
         db = new dfor::DB("/var/run/dfor/cache.db");
     }
-    std::string ip = db->query(std::string(node), dfor::FAILOVER);
+    std::string hostname = std::string(node);
+    std::string ip = db->query(hostname, dfor::FAILOVER);
     if (ip == "") {
         return (*orig_getaddrinfo)(node,service,hints,res);
     } else {
@@ -54,6 +55,7 @@ int getaddrinfo(const char *node, const char *service, const struct addrinfo *hi
         sock->sin_family = AF_INET;
         sock->sin_addr.s_addr = inet_addr(ip.c_str());
         *res = addr;
+        db->updateCount(hostname, ip);
         return 0;
     }
 
