@@ -11,6 +11,7 @@ all: $(TARGET)
 
 $(TARGET): $(OBJECTS)
 	$(CC) $(FLAGS) $(CFLAGS) $(LDFLAGS) -o $(TARGET) $(OBJECTS)
+	ln -s -f dfor.so libdfor.so
 
 clean:
 	rm *.o *.so

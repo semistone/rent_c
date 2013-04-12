@@ -14,7 +14,7 @@
 #include <cppunit/XmlOutputter.h>
 #include <netinet/in.h>
 
-#include "../DB.h"
+#include "../src/DB.h"
 
 using namespace CppUnit;
 using namespace std;
@@ -56,7 +56,7 @@ TestDB::testQuery(void)
         HostRecord host = HostRecord(std::string("localhost"), std::string("127.0.0.1"), 1, (long)0);
         int ret = test->insert(host);
         //printf("insert result %d\n", ret);
-        std::string ip = test->query("localhost", FAILOVER);
+        std::string ip = test->query("localhost");
         ret = test->updateCount(host.name, host.ip);
         //printf(ip.c_str());
     }catch(std::runtime_error& e){
