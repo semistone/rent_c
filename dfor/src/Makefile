@@ -16,10 +16,3 @@ $(TARGET): $(OBJECTS)
 clean:
 	rm *.o *.so
 
-install:
-	mkdir -p ${prefix}/usr/local/etc/dfor
-	mkdir -p ${prefix}/var/run/dfor
-	mkdir -p ${prefix}/var/log/dfor
-	mkdir -p ${prefix}/usr/local/lib
-	cp etc/log4cpp.properties ${prefix}/usr/local/etc/dfor
-	cp dfor.so ${prefix}/usr/local/lib/dfor.so
