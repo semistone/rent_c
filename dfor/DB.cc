@@ -15,26 +15,26 @@ static std::string CREATESQL = "CREATE TABLE HOST("
 static std::string CREATEINDEX = "create unique index UNI_IDX_HOST_NAME_IP on HOST(NAME,IP)";
 
 
-HostRecord::HostRecord(const std::string& name, const std::string& ip, int status, long modified){
+HostRecord::HostRecord(const std::string& name, const std::string& ip, int status, long modified){//{{{
     this->name = name;
     this->ip = ip;
     this->status = status;
     this->modified = modified;
-};
+};//}}}
 
 
 /**
  * init sqlite object
  */
-DB::DB(const std::string& dbfile){
+DB::DB(const std::string& dbfile){//{{{
     this->logger->debugStream()<< "init dbfile file" << dbfile;
     if (sqlite3_open_v2(dbfile.c_str(), &(this->db), SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL)) {
         return;
     }
-}
+}//}}}
 
 bool
-DB::create(){
+DB::create(){//{{{
     this->logger->debug("create table");
     //
     // create
@@ -43,10 +43,10 @@ DB::create(){
     int ret = sqlite3_exec(db, CREATESQL.c_str(), 0, 0, &errMsg);
     int ret2 = sqlite3_exec(db, CREATEINDEX.c_str(), 0, 0, &errMsg);
     return ret == SQLITE_OK && ret2 == SQLITE_OK;
-}
+}//}}}
 
 int 
-DB::insert(HostRecord& record){
+DB::insert(HostRecord& record){//{{{
     sqlite3_stmt *stmt;
     if (sqlite3_prepare(db, 
                         "insert into HOST (NAME,IP,STATUS,MODIFIED)values (?, ?, 0, ?)",  // stmt
@@ -67,10 +67,11 @@ DB::insert(HostRecord& record){
         sqlite3_finalize(stmt);
         return 0;
     }
-}
+}//}}}
 
 int
-DB::updateCount(std::string& name, std::string& ip){
+DB::updateCount(std::string& name, std::string& ip){//{{{
+    this->logger->debugStream()<< "update count for name " << name << "ip "<<ip;
     sqlite3_stmt *stmt;
     if (sqlite3_prepare(db, 
                         "update HOST set COUNT=COUNT+1,LAST_READ_TIME=? where NAME=? and IP=?",  // stmt
@@ -92,14 +93,15 @@ DB::updateCount(std::string& name, std::string& ip){
         return 0;
     }
 
-}
+}//}}}
 
 /**
  * select by weight
  *
  */
 std::string
-DB::query(const std::string& name){
+DB::query(const std::string& name){//{{{
+    this->logger->debugStream()<< "query for name " << name;
     sqlite3_stmt *stmt;
     if (sqlite3_prepare(db, 
                         "select IP from HOST where STATUS='1' and NAME=? order by COUNT/WEIGHT,IP asc limit 1",  // stmt
@@ -122,13 +124,13 @@ DB::query(const std::string& name){
     std::string ip = std::string((char*)sqlite3_column_text(stmt, 0));
     sqlite3_finalize(stmt);
     return ip;
-}
+}//}}}
 
 
 /**
  * close sqlite
  */
-DB::~DB(){
+DB::~DB(){//{{{
     this->logger->info("close database");
     sqlite3_close(this->db);
-}
+}//}}}

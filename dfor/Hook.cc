@@ -9,29 +9,44 @@
 #include "DB.h"
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include "log4cpp/PropertyConfigurator.hh"
 
 static struct hostent *((*orig_gethostbyname)(const char *name)) = NULL;
 static int (*orig_getaddrinfo)(const char *node, const char *service, const struct addrinfo *hints, struct addrinfo **res) = NULL;
 static dfor::DB *db = NULL;
-struct hostent *gethostbyname(const char *name)
-{
+
+
+struct hostent *gethostbyname(const char *name){//{{{
     if (orig_gethostbyname == NULL)
     {
          orig_gethostbyname = (struct hostent *((*)(const char *name)))dlsym(RTLD_NEXT, "gethostbyname");
     }
     return (*orig_gethostbyname)(name);
     // TODO: print desired message from caller. 
-}
+}//}}}
 
-int getaddrinfo(const char *node, const char *service, const struct addrinfo *hints, struct addrinfo **res){
+int 
+init_dfor(){//{{{
+    std::string dbfile = "/var/run/dfor/cache.db";
+    FILE *fp = fopen(dbfile.c_str(), "r");
+    if(fp){
+        fclose(fp);
+    } else {
+        return -1; // if not exist.
+    }
+    log4cpp::PropertyConfigurator::configure("/usr/local/etc/dfor/log4cpp.properties");
+    db = new dfor::DB(dbfile);
+}//}}}
+
+int getaddrinfo(const char *node, const char *service, const struct addrinfo *hints, struct addrinfo **res){//{{{
     if (orig_getaddrinfo == NULL)
     {
          orig_getaddrinfo = (int (*)(const char *node, const char *service, const struct addrinfo *hints, struct addrinfo **res))
                              dlsym(RTLD_NEXT, "getaddrinfo");
     }
-    // TODO: print desired message from caller. 
-    if (db == NULL) {
-        db = new dfor::DB("/var/run/dfor/cache.db");
+    // init 
+    if (db == NULL){
+        if(init_dfor() != 0) return -1;
     }
     std::string hostname = std::string(node);
     std::string ip = db->query(hostname);
@@ -59,4 +74,4 @@ int getaddrinfo(const char *node, const char *service, const struct addrinfo *hi
         return 0;
     }
 
-}
+}//}}}
