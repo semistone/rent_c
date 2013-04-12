@@ -16,7 +16,6 @@ name resolve load balance library.
 %setup
 
 %build
-make 
 
 %install
 make install prefix=$RPM_BUILD_ROOT
