@@ -23,5 +23,6 @@ make install prefix=$RPM_BUILD_ROOT
 
 %files 
 %defattr(-, root, root)
+"/var/run/dfor/cache.db"
 "/usr/local/lib/dfor.so"
 "/usr/local/etc/dfor/log4cpp.properties"
