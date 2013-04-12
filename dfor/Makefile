@@ -1,5 +1,5 @@
 all:  
-	make -C src
+	$(MAKE) -C src
 package:
 	mkdir -p pkgs/SOURCES
 	mkdir -p pkgs/BUILD

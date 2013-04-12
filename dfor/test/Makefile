@@ -9,5 +9,7 @@ testdfor:
 	$(CXX) $(CXXFLAGS) -o $@ TestDB.cpp $(OBJM) $(LINKFLAGS) $(LINKFLAGSLOG4) $(LIBLOG)
 
 clean:
-	rm testdfor
-	rm libdfor.so
+	rm -f testdfor
+	rm -f *.so
+	rm -f *.db
+	rm -f *.xml
