@@ -1,0 +1,8 @@
+username: admin
+password: guest
+days:
+- mon
+- tue
+- wed
+- thu
+- fri
