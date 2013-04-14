@@ -1,0 +1,19 @@
+example.com:
+   mode: weight 
+   check_method: socket
+   check_port: 3306
+   ttl: 3000
+   hosts:
+       127.0.0.1:
+           weight: 2
+       192.168.0.2:
+           weight: 3
+example2.com:
+   mode: round-robin
+   check_method: http 
+   check_path: /ok
+   check_port: 80 
+   ttl: 3000
+   hosts:
+       - 127.0.0.1
+       - 192.168.0.2

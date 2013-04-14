@@ -27,3 +27,4 @@ make install prefix=$RPM_BUILD_ROOT
 "/usr/local/lib/dfor.so"
 "/usr/local/etc/dfor/log4cpp.properties"
 "/usr/local/etc/dfor/config.yaml"
+"/usr/local/bin/dford.js"
