@@ -2,7 +2,7 @@ CXX = g++
 INCLUDES= -I../
 CXXFLAGS = -g $(INCLUDES)
 OBJM = $(SRCM:.cpp=.o)
-LINKFLAGS= -lcppunit -L../src -ldfor
+LINKFLAGS= -lcppunit -L../src -ldfor -lsqlite3 -llog4cpp
 
 testdfor:
 	ln -s -f ../src/dfor.so libdfor.so
