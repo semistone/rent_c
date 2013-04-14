@@ -4,29 +4,41 @@
  *
  *
  */
-var _ = require('underscore')._;
-var net = require('net');
-var yaml = require("js-yaml"), confpath = process.argv[2];
+//
+// require libs
+//
+var net = require('net'),
+    http = require('http'),
+    _ = require('underscore')._,
+    yaml = require("js-yaml"),
+    sqlite3 = require('sqlite3').verbose();
+
+var confpath = process.argv[2];
+if (confpath == undefined)  
+    confpath = '/usr/local/etc/dfor';
 //
 //  open sqlite
 //
-var sqlite3 = require('sqlite3').verbose();
-var dbfile = confpath + "/cache.db";
-console.log('db file in ' + dbfile);
-var db = new sqlite3.Database(dbfile);
+var SOCKET_TIMEOUT = 3000;
+var DBFILE = '/var/run/dfor/cache.db';
+console.log('db file in ' + DBFILE);
+var db = new sqlite3.Database(DBFILE);
 //
 // open config file
 //
 var conffile = confpath + "/config.yaml";
 console.log('config file in ' + conffile);
 var config = require(conffile);
-var callback = {
+
+var callback = {//{{{
     error: function(name, ip, last_status){
         if(last_status.status == 1) {
             last_status.status = 0;
             var ts = Math.round(Date.now() / 1000);
-            console.log('status change to 0');
+            console.log('status change to 0, name:' + name + ' ip:' + ip);
             db.run('update HOST set STATUS=0, MODIFIED=? where NAME=? and  IP=?', [ts, name, ip]);
+        } else {
+            console.log('last status is 0');
         }
         console.log('connect error for name:' + name + ' ip:' + ip);
     },
@@ -35,15 +47,18 @@ var callback = {
         if(last_status.status == 0) {
             last_status.status = 1;
             var ts = Math.round(Date.now() / 1000);
-            console.log('status change to 1');
+            console.log('status change to 1, name:' + name + ' ip:' + ip);
             db.run('update HOST set STATUS=1, MODIFIED=? where NAME=? and  IP=?', [ts, name, ip]);
+        } else {
+            console.log('last status is 1');
         }
     }
-};
+};//}}}
 
 function check_socket(name, ip , port, callback, last_status) {//{{{
+    console.log('check socket name:' + name + ' ip:' + ip + ' port:' + port);
     var socket = net.createConnection(port, ip);
-    socket.setTimeout(3000);
+    socket.setTimeout(SOCKET_TIMEOUT);
     socket.on("error", function (err) {
         console.log("socket error: " + err);
         socket.end();
@@ -62,16 +77,50 @@ function check_socket(name, ip , port, callback, last_status) {//{{{
     });
 }//}}}
 
+function check_http(name, ip, port, path, callback, last_status){//{{{
+    var options = {
+        hostname: ip,
+        port: port,
+        path: path,
+        method: 'GET'
+    };
+    console.log('check http , option is ', options);
+    var req = http.request(options, function(res) {
+        if (res.statusCode == 200) {
+            console.log('http connected and success');
+            if(callback) callback.connect(name, ip, last_status);
+        } else {
+            console.log('http connected and fail');
+            if(callback) callback.error(name, ip, last_status);
+        } 
+    });
+    req.setTimeout(SOCKET_TIMEOUT, function(){
+        console.log('http connected and timeout');
+        if(callback) callback.error(name, ip, last_status);
+    });
+    req.on('error', function(err) {
+        console.log('http connected and error');
+        if(callback) callback.error(name, ip, last_status);
+    });
+    req.end();
+}//}}}
 
 function start(name, ip, settings){//{{{
     var method = settings['check_method'], last_status = {'status' : 0};
+    var ttl = settings.ttl;
+    console.log(name + ' ttl is ' + ttl);
+    if (ttl == undefined) ttl = 5000;
     setInterval((function() {
+        var port = settings['check_port'];
         if(method == 'socket'){
-            var port = settings['check_port'];
-            console.log('check socket port:' + port);
             check_socket(name, ip, port, callback, last_status);
+        } else if (method == 'http') {
+            if (port == undefined) port = 80;
+            var path = settings['check_path'];
+            //console.log('check http port:' + port + ' path:' + path);
+            check_http(name, ip, port, path, callback, last_status);
         }
-    }), 5000);
+    }), ttl);
 }//}}}
 
 //console.log(JSON.stringify(config, null, "    "));
