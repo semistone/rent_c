@@ -10,7 +10,7 @@ TARGET  = dfor.so
 all: $(TARGET)
 
 $(TARGET): $(OBJECTS)
-	$(CC) $(FLAGS) $(CFLAGS) $(LDFLAGS) -o $(TARGET) $(OBJECTS)
+	$(CC) $(FLAGS) $(CFLAGS) -o $(TARGET) $(OBJECTS)  $(LDFLAGS)
 	ln -s -f dfor.so libdfor.so
 
 clean:

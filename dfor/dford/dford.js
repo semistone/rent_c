@@ -1,3 +1,4 @@
+#!/usr/bin/node
 /**
  *
  * dfor daemon to watch host status
