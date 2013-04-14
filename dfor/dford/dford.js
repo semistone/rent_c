@@ -39,7 +39,7 @@ var callback = {//{{{
             console.log('status change to 0, name:' + name + ' ip:' + ip);
             db.run('update HOST set STATUS=0, MODIFIED=? where NAME=? and  IP=?', [ts, name, ip]);
         } else {
-            console.log('last status is 0');
+            //console.log('last status is 0');
         }
         console.log('connect error for name:' + name + ' ip:' + ip);
     },
@@ -51,7 +51,7 @@ var callback = {//{{{
             console.log('status change to 1, name:' + name + ' ip:' + ip);
             db.run('update HOST set STATUS=1, MODIFIED=? where NAME=? and  IP=?', [ts, name, ip]);
         } else {
-            console.log('last status is 1');
+            //console.log('last status is 1');
         }
     }
 };//}}}

@@ -17,5 +17,6 @@ install:
 	mkdir -p ${prefix}/var/log/dfor
 	mkdir -p ${prefix}/usr/local/lib
 	cp etc/log4cpp.properties ${prefix}/usr/local/etc/dfor
+	cp etc/config.yaml ${prefix}/usr/local/etc/dfor
 	cp src/dfor.so ${prefix}/usr/local/lib/dfor.so
 	/usr/bin/sqlite3 ${prefix}/var/run/dfor/cache.db < etc/create.sql

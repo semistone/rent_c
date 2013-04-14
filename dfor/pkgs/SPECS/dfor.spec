@@ -26,3 +26,4 @@ make install prefix=$RPM_BUILD_ROOT
 "/var/run/dfor/cache.db"
 "/usr/local/lib/dfor.so"
 "/usr/local/etc/dfor/log4cpp.properties"
+"/usr/local/etc/dfor/config.yaml"
