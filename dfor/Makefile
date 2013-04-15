@@ -4,6 +4,7 @@ package:
 	mkdir -p pkgs/SOURCES
 	mkdir -p pkgs/BUILD
 	mkdir -p pkgs/RPMS
+	mkdir -p pkgs/SRPMS
 	mkdir -p dfor-0.1
 	cp -rf src dfor-0.1
 	cp -rf etc dfor-0.1
