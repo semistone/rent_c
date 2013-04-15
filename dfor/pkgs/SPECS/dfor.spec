@@ -8,7 +8,12 @@ Source: dfor.tar.gz
 URL: https://github.com/semistone/rent_c/tree/master/dfor
 Vendor: -
 Packager: Angus Chen
-
+#BuildRequires: log4cpp-devel
+#BuildRequires: sqlite-devel
+Requires: log4cpp
+Requires: sqlite 
+#Requires: node 
+BuildRoot: %{_tmpdir}/%{name}-%{version}-%{release}
 %description
 name resolve load balance library.
 
