@@ -124,6 +124,23 @@ function start(name, ip, settings){//{{{
     }), ttl);
 }//}}}
 
+function clean_extra_record(name, hosts, isarray){//{{{
+    console.log('clean record for name:' + name);
+    db.each("select NAME, IP  from HOST where NAME = ?", [name], function(err, row) {
+        if(isarray){
+            if(_.indexOf(hosts, row.IP) == -1) {
+                console.log("1.name:" + row.NAME+ " ip:" + row.IP + " not exist in config");
+                db.run('delete from HOST where NAME=? and  IP=?', [row.NAME, row.IP]);
+            }
+        } else {
+            if (hosts[row.IP] == undefined) {
+                console.log("2.name:" + row.NAME + " ip:" + row.IP + " not exist in config");
+                db.run('delete from HOST where NAME=? and  IP=?', [row.NAME, row.IP]);
+            }
+        }
+    });
+} //}}}
+
 //console.log(JSON.stringify(config, null, "    "));
 //
 // init and insert  hosts into db
@@ -132,6 +149,11 @@ for(var name in config){
     console.log('host is ' + name);
     var hosts = config[name].hosts, mode = config[name].mode;
     var isarray = _.isArray(hosts), weight = 0;
+    //
+    // delete extra record
+    //
+    clean_extra_record(name, hosts, isarray);
+
     if (mode == 'round-robin') {
         weight = 1;
     }
@@ -145,9 +167,9 @@ for(var name in config){
         if(mode == 'weight'){
             weight = hosts[ip].weight;
         }
-        var insert_stmt = db.prepare("insert or replace into HOST (NAME,IP,COUNT, WEIGHT,MODIFIED) values (?,?,0,?,?)");
-        var ts = Math.round(Date.now() / 1000);
         (function(){
+           var insert_stmt = db.prepare("insert or replace into HOST (NAME,IP,COUNT, WEIGHT,MODIFIED) values (?,?,0,?,?)");
+           var ts = Math.round(Date.now() / 1000);
            var _name = name, _ip = ip, _settings = config[name];
            insert_stmt.run([name, ip, weight, ts], function(){
                start(_name, _ip, _settings);        
@@ -155,22 +177,4 @@ for(var name in config){
            insert_stmt.finalize();
         })();
     }
-    //
-    // delete extra record
-    //
-    (function(name, _hosts, isarray){
-        db.each("select name, ip from HOST where name = ? ", [name], function(err, row) {
-            if(isarray){
-                if(_.indexOf(_hosts, row.IP) == -1) {
-                    console.log("1.name:" + row.NAME+ " ip:" + row.IP + " not exist in config");
-                    db.run('delete from HOST where NAME=? and  IP=?', [row.NAME, row.IP]);
-                }
-            } else {
-                if (_hosts[row.IP] == undefined) {
-                    console.log("2.name:" + row.NAME + " ip:" + row.IP + " not exist in config");
-                    db.run('delete from HOST where NAME=? and  IP=?', [row.NAME, row.IP]);
-                }
-            }
-        });
-    })(name, hosts, isarray);
 }
