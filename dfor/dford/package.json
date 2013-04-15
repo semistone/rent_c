@@ -1,0 +1,21 @@
+{
+    "name": "dford",
+    "description": "Name resolved load balance tool",
+    "version": "0.0.1",
+    "homepage": "https://github.com/semistone/rent_c/tree/master/dfor",
+    "author": {
+        "name": "Angus Chen",
+        "url": "http://angus-ec2.siraya.net/",
+        "email": "semistone@gmail.com"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/semistone/rent_c.git"
+    },
+    "devDependencies": {
+        "sqlite3": "~2.1.1",
+        "js-yaml": "~2.0.4",
+        "underscore": "~1.4.4"
+    },
+    "main": "./dford"
+}
