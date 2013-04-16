@@ -14,6 +14,7 @@
 static struct hostent *((*orig_gethostbyname)(const char *name)) = NULL;
 static int (*orig_getaddrinfo)(const char *node, const char *service, const struct addrinfo *hints, struct addrinfo **res) = NULL;
 static dfor::DB *db = NULL;
+log4cpp::Category* logger=&log4cpp::Category::getInstance(std::string("dfor"));
 
 int 
 init_dfor(){//{{{
@@ -44,6 +45,7 @@ struct hostent *gethostbyname(const char *name){//{{{
         if(init_dfor() != 0)
             return (*orig_gethostbyname)(name);
     }
+    logger->debugStream()<<" call gethostbyname";
     std::string hostname = std::string(name);
     std::string ip = db->query(hostname);
     struct hostent *host;
@@ -72,11 +74,18 @@ int getaddrinfo(const char *node, const char *service, const struct addrinfo *hi
     if (db == NULL){
         if(init_dfor() != 0) return -1;
     }
+    logger->debugStream()<<" call getaddrinfo node:"<<node;
+    if (node == NULL) {
+        logger->debugStream()<<" call getaddrinfo node is empty";
+        return (*orig_getaddrinfo)(node,service,hints,res);
+    }
     std::string hostname = std::string(node);
     std::string ip = db->query(hostname);
     if (ip == "") {
+        logger->debugStream()<<"ip is empty";
         return (*orig_getaddrinfo)(node,service,hints,res);
     } else {
+        logger->debugStream()<<"ip is not empty";
         struct sockaddr_in *sock;
         struct addrinfo  *addr;
         char* name = (char*) malloc(100);

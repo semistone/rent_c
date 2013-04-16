@@ -26,10 +26,10 @@ public:
     int update(std::string& host, int status);
     int updateCount(std::string& name, std::string& ip);
     std::string query(const std::string& name);
+    static log4cpp::Category* logger;
     ~DB();
 private:
     sqlite3 *db;
-    static log4cpp::Category* logger;
 };
 };// namespace c2c
 #endif
