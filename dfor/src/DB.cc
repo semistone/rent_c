@@ -71,7 +71,7 @@ DB::insert(HostRecord& record){//{{{
 
 int
 DB::updateCount(std::string& name, std::string& ip){//{{{
-    this->logger->debugStream()<< "update count for name " << name << "ip "<<ip;
+    this->logger->debugStream()<< "update count for name " << name << " ip "<<ip;
     sqlite3_stmt *stmt;
     if (sqlite3_prepare(db, 
                         "update HOST set COUNT=COUNT+1,LAST_READ_TIME=? where NAME=? and IP=?",  // stmt

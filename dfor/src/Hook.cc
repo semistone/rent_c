@@ -17,6 +17,15 @@ static dfor::DB *db = NULL;
 
 int 
 init_dfor(){//{{{
+    if (orig_getaddrinfo == NULL)
+    {
+         orig_getaddrinfo = (int (*)(const char *node, const char *service, const struct addrinfo *hints, struct addrinfo **res))
+                             dlsym(RTLD_NEXT, "getaddrinfo");
+    }
+    if (orig_gethostbyname == NULL)
+    {
+         orig_gethostbyname = (struct hostent *((*)(const char *name)))dlsym(RTLD_NEXT, "gethostbyname");
+    }
     std::string dbfile = "/var/run/dfor/cache.db";
     FILE *fp = fopen(dbfile.c_str(), "r");
     if(fp){
@@ -30,10 +39,6 @@ init_dfor(){//{{{
 }//}}}
 
 struct hostent *gethostbyname(const char *name){//{{{
-    if (orig_gethostbyname == NULL)
-    {
-         orig_gethostbyname = (struct hostent *((*)(const char *name)))dlsym(RTLD_NEXT, "gethostbyname");
-    }
     // init 
     if (db == NULL){
         if(init_dfor() != 0)
@@ -63,11 +68,6 @@ struct hostent *gethostbyname(const char *name){//{{{
 }//}}}
 
 int getaddrinfo(const char *node, const char *service, const struct addrinfo *hints, struct addrinfo **res){//{{{
-    if (orig_getaddrinfo == NULL)
-    {
-         orig_getaddrinfo = (int (*)(const char *node, const char *service, const struct addrinfo *hints, struct addrinfo **res))
-                             dlsym(RTLD_NEXT, "getaddrinfo");
-    }
     // init 
     if (db == NULL){
         if(init_dfor() != 0) return -1;
@@ -89,6 +89,8 @@ int getaddrinfo(const char *node, const char *service, const struct addrinfo *hi
         addr->ai_socktype = SOCK_STREAM;
         addr->ai_addrlen = sizeof(sockaddr_in);
         addr->ai_addr = (sockaddr*)sock;
+        addr->ai_addrlen = sizeof(sockaddr_in);
+        addr->ai_protocol = 0;
         addr->ai_canonname = name;
         addr->ai_next = NULL;
         sock->sin_family = AF_INET;
