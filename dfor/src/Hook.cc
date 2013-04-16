@@ -15,16 +15,6 @@ static struct hostent *((*orig_gethostbyname)(const char *name)) = NULL;
 static int (*orig_getaddrinfo)(const char *node, const char *service, const struct addrinfo *hints, struct addrinfo **res) = NULL;
 static dfor::DB *db = NULL;
 
-
-struct hostent *gethostbyname(const char *name){//{{{
-    if (orig_gethostbyname == NULL)
-    {
-         orig_gethostbyname = (struct hostent *((*)(const char *name)))dlsym(RTLD_NEXT, "gethostbyname");
-    }
-    return (*orig_gethostbyname)(name);
-    // TODO: print desired message from caller. 
-}//}}}
-
 int 
 init_dfor(){//{{{
     std::string dbfile = "/var/run/dfor/cache.db";
@@ -36,6 +26,39 @@ init_dfor(){//{{{
     }
     log4cpp::PropertyConfigurator::configure("/usr/local/etc/dfor/log4cpp.properties");
     db = new dfor::DB(dbfile);
+    return 0;
+}//}}}
+
+struct hostent *gethostbyname(const char *name){//{{{
+    if (orig_gethostbyname == NULL)
+    {
+         orig_gethostbyname = (struct hostent *((*)(const char *name)))dlsym(RTLD_NEXT, "gethostbyname");
+    }
+    // init 
+    if (db == NULL){
+        if(init_dfor() != 0)
+            return (*orig_gethostbyname)(name);
+    }
+    std::string hostname = std::string(name);
+    std::string ip = db->query(hostname);
+    struct hostent *host;
+    struct in_addr *addr;
+    if (ip == "") {
+        return (*orig_gethostbyname)(name);
+    } else {
+        char* name = (char*) malloc(100);
+        snprintf(name, 100, "%s", "dfor canonname"); 
+        host = (hostent*) malloc(sizeof(hostent));
+        addr = (in_addr*) malloc(sizeof(in_addr));
+        host->h_name = name;
+        host->h_length = 1;
+        host->h_addrtype = AF_INET;
+        inet_aton(ip.c_str(), addr);
+        host->h_addr_list = (char**)malloc(2 * sizeof(char *));
+        host->h_addr_list[0] = (char*)addr;
+        host->h_addr_list[1] = NULL;
+        return host;
+    }
 }//}}}
 
 int getaddrinfo(const char *node, const char *service, const struct addrinfo *hints, struct addrinfo **res){//{{{
