@@ -51,9 +51,10 @@ struct hostent *gethostbyname(const char *name){//{{{
         host = (hostent*) malloc(sizeof(hostent));
         addr = (in_addr*) malloc(sizeof(in_addr));
         host->h_name = name;
-        host->h_length = 1;
+        host->h_length = sizeof(struct in_addr);
         host->h_addrtype = AF_INET;
         inet_aton(ip.c_str(), addr);
+        host->h_aliases = NULL;
         host->h_addr_list = (char**)malloc(2 * sizeof(char *));
         host->h_addr_list[0] = (char*)addr;
         host->h_addr_list[1] = NULL;
