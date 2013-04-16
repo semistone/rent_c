@@ -43,7 +43,11 @@ init_dfor(){//{{{
  * for debug
  */
 void dump_addr(addrinfo* res, const char* service){//{{{
-    printf("service is %s", service);
+    if (service != NULL) {
+        printf("service is %s\n", service);
+    } else {
+        printf("service is null\n");
+    }
     if (res == NULL) {
         printf("addr is null\n");
         return;
@@ -132,7 +136,9 @@ int getaddrinfo(const char *node, const char *service, const struct addrinfo *hi
         addr->ai_canonname =  strdup(node);
         addr->ai_next = NULL;
         sock->sin_family = AF_INET;
-        sock->sin_port = htons(atoi(service));
+        if (service != NULL) {
+            sock->sin_port = htons(atoi(service));
+        }
         sock->sin_addr.s_addr = inet_addr(ip.c_str());
         *res = addr;
         db->updateCount(hostname, ip);
