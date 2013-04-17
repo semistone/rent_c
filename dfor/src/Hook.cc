@@ -84,8 +84,10 @@ struct hostent *gethostbyname(const char *name){//{{{
     struct hostent *host;
     struct in_addr *addr;
     if (ip == "") {
+        logger->debugStream()<<"ip is empty";
         return (*orig_gethostbyname)(name);
     } else {
+        logger->debugStream()<<"ip is not empty";
         char* name = (char*) malloc(100);
         snprintf(name, 100, "%s", "dfor canonname"); 
         host = (hostent*) malloc(sizeof(hostent));
