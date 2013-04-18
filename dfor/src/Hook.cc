@@ -14,7 +14,7 @@
 static struct hostent *((*orig_gethostbyname)(const char *name)) = NULL;
 static int (*orig_getaddrinfo)(const char *node, const char *service, const struct addrinfo *hints, struct addrinfo **res) = NULL;
 static dfor::DB *db = NULL;
-log4cpp::Category* logger=&log4cpp::Category::getInstance(std::string("dfor"));
+static log4cpp::Category* logger = &log4cpp::Category::getInstance(std::string("dfor"));
 
 int 
 init_dfor(){//{{{
