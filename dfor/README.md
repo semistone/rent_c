@@ -53,13 +53,14 @@ log in
            - 192.168.0.2
 ### How it build and install
 Require library: log4cpp, sqlite3
+
 Require packages: node.js
 
-compile and install library
+Compile and install library
     make 
     make install
 
-install dford
+Install dford
     cd dford
     npm install
 
