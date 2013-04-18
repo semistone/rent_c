@@ -54,19 +54,17 @@ log in
 ### How it build and install
 Require library: log4cpp, sqlite3
 Require packages: node.js
-#
-# compile and install library
-#
-make 
-make install
-#
-# install dford
-#
-cd dford
-npm install
+
+compile and install library
+    make 
+    make install
+
+install dford
+    cd dford
+    npm install
 
 ### How it work
-export LD_PRELOAD=/usr/local/lib/dfor.so
+    export LD_PRELOAD=/usr/local/lib/dfor.so
 
 ### Sqlite schema
     ubuntu@ip-10-142-55-159:~/rent_c/dfor$ sqlite3 /var/run/dfor/cache.db
