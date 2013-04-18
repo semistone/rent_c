@@ -1,4 +1,4 @@
-Name resolved load balance library
+Name resolver load balance library
 ==================================
 This library provide one dfor.so to hook
 gethostbyname and getaddrinfo function. 
@@ -14,7 +14,7 @@ It use node.js to implement the server monitor daemon.
 It current support  socket mode which only check connection alive.
 and http mode which will trigger http request and check status code as OK
 
-### file list
+### Install file list
 install in .so in
 /usr/local/lib/dfor.so
 
@@ -31,7 +31,7 @@ runtime sqlite cache in
 log in
 /var/log/dfor/dfor.log
 
-### config example:
+### Config example:
     example.com:
        mode: weight 
        check_method: socket
@@ -51,10 +51,24 @@ log in
        hosts:
            - 127.0.0.1
            - 192.168.0.2
+### How it build and install
+Require library: log4cpp, sqlite3
+Require packages: node.js
+#
+# compile and install library
+#
+make 
+make install
+#
+# install dford
+#
+cd dford
+npm install
+
 ### How it work
 export LD_PRELOAD=/usr/local/lib/dfor.so
 
-### check sqlite schema
+### Sqlite schema
     ubuntu@ip-10-142-55-159:~/rent_c/dfor$ sqlite3 /var/run/dfor/cache.db
     SQLite version 3.7.9 2011-11-01 00:52:41
     Enter ".help" for instructions
@@ -72,7 +86,8 @@ export LD_PRELOAD=/usr/local/lib/dfor.so
     CREATE INDEX IDX_HOST_NAME on HOST(NAME);
 
 
-### how to verify
+### How to verify 
+    dford start
     export LD_PRELOAD=/usr/local/lib/dfor.so
     curl http://example.com
     
