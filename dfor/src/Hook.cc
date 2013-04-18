@@ -27,6 +27,10 @@ init_dfor(){//{{{
     {
          orig_gethostbyname = (struct hostent *((*)(const char *name)))dlsym(RTLD_NEXT, "gethostbyname");
     }
+    logger->debugStream()<<"init logger";
+    log4cpp::PropertyConfigurator::configure("/usr/local/etc/dfor/log4cpp.properties");
+
+    logger->debugStream()<<"check cache.db file exist";
     std::string dbfile = "/var/run/dfor/cache.db";
     FILE *fp = fopen(dbfile.c_str(), "r");
     if(fp){
@@ -34,7 +38,8 @@ init_dfor(){//{{{
     } else {
         return -1; // if not exist.
     }
-    log4cpp::PropertyConfigurator::configure("/usr/local/etc/dfor/log4cpp.properties");
+
+    logger->debugStream()<<"init sqlite db";
     db = new dfor::DB(dbfile);
     return 0;
 }//}}}
@@ -88,11 +93,9 @@ struct hostent *gethostbyname(const char *name){//{{{
         return (*orig_gethostbyname)(name);
     } else {
         logger->debugStream()<<"ip is not empty";
-        char* name = (char*) malloc(100);
-        snprintf(name, 100, "%s", "dfor canonname"); 
         host = (hostent*) malloc(sizeof(hostent));
         addr = (in_addr*) malloc(sizeof(in_addr));
-        host->h_name = name;
+        host->h_name = strdup(name);
         host->h_length = sizeof(struct in_addr);
         host->h_addrtype = AF_INET;
         inet_aton(ip.c_str(), addr);
