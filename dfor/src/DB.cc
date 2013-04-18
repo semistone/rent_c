@@ -104,7 +104,7 @@ DB::query(const std::string& name){//{{{
     this->logger->debugStream()<< "query for name " << name;
     sqlite3_stmt *stmt;
     if (sqlite3_prepare(db, 
-                        "select IP from HOST where STATUS='1' and NAME=? order by (COUNT + ADJUST ) * WEIGHT,IP asc limit 1",  // stmt
+                        "select IP from HOST where STATUS='1' and NAME=? order by (COUNT + ADJUST ) * WEIGHT,ID asc limit 1",  // stmt
                         -1, // If than zero, then stmt is read up to the first nul terminator
                         &stmt,
                         0  // Pointer to unused portion of stmt
