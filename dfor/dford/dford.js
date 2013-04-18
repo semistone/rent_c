@@ -12,24 +12,19 @@ var net = require('net'),
     http = require('http'),
     _ = require('underscore')._,
     yaml = require("js-yaml"),
-    sqlite3 = require('sqlite3').verbose();
+    sqlite3 = require('sqlite3'),
+    init = require('simple-daemon');
 
-var confpath = process.argv[2];
-if (confpath == undefined)  
-    confpath = '/usr/local/etc/dfor';
 //
 //  open sqlite
 //
+var CONF_PATH = '/usr/local/etc/dfor';
 var SOCKET_TIMEOUT = 3000;
 var DBFILE = '/var/run/dfor/cache.db';
-console.log('db file in ' + DBFILE);
-var db = new sqlite3.Database(DBFILE);
+var db = undefined;
 //
 // open config file
 //
-var conffile = confpath + "/config.yaml";
-console.log('config file in ' + conffile);
-var config = require(conffile);
 
 var callback = {//{{{
     error: function(name, ip, last_status){
@@ -138,40 +133,56 @@ function clean_extra_record(name, hosts, isarray){//{{{
     });
 } //}}}
 
+function run(conffile, dbfile){//{{{
+    console.log('db file in ' + dbfile);
+    db = new sqlite3.Database(dbfile);
+    console.log('config file in ' + conffile);
+    var config = require(conffile);
+    for(var name in config){ 
+        console.log('host is ' + name);
+        var hosts = config[name].hosts, mode = config[name].mode;
+        var isarray = _.isArray(hosts), weight = 0;
+        //
+        // delete extra record
+        //
+        clean_extra_record(name, hosts, isarray);
+    
+        if (mode == 'round-robin') {
+            weight = 1;
+        }
+        for(var index in hosts){
+            var ip;
+            if(isarray){
+                ip = hosts[index];
+            } else {
+                ip = index;
+            }
+            if(mode == 'weight'){
+                weight = 1 / hosts[ip].weight;
+            }
+            (function(){
+               console.log('init for ip ' + ip);
+               var insert_stmt = db.prepare("insert or replace into HOST (NAME,IP,COUNT, WEIGHT,MODIFIED) values (?,?,0,?,?)");
+               var ts = Math.round(Date.now() / 1000);
+               var _name = name, _ip = ip, _settings = config[name];
+               insert_stmt.run([name, ip, weight, ts], function(){
+                   start(_name, _ip, _settings);        
+               });
+               insert_stmt.finalize();
+            })();
+        }
+    }
+}//}}}
 //console.log(JSON.stringify(config, null, "    "));
 //
 // init and insert  hosts into db
 //
-for(var name in config){ 
-    console.log('host is ' + name);
-    var hosts = config[name].hosts, mode = config[name].mode;
-    var isarray = _.isArray(hosts), weight = 0;
-    //
-    // delete extra record
-    //
-    clean_extra_record(name, hosts, isarray);
-
-    if (mode == 'round-robin') {
-        weight = 1;
+init.simple({
+    pidfile : '/var/run/dfor/dford.pid',
+    logfile : '/var/log/dfor/dford.log',
+    command : process.argv[3],
+    runSync : function () {
+        var conffile = CONF_PATH + "/config.yaml";
+        run(conffile, DBFILE);
     }
-    for(var index in hosts){
-        var ip;
-        if(isarray){
-            ip = hosts[index];
-        } else {
-            ip = index;
-        }
-        if(mode == 'weight'){
-            weight = 1 / hosts[ip].weight;
-        }
-        (function(){
-           var insert_stmt = db.prepare("insert or replace into HOST (NAME,IP,COUNT, WEIGHT,MODIFIED) values (?,?,0,?,?)");
-           var ts = Math.round(Date.now() / 1000);
-           var _name = name, _ip = ip, _settings = config[name];
-           insert_stmt.run([name, ip, weight, ts], function(){
-               start(_name, _ip, _settings);        
-           });
-           insert_stmt.finalize();
-        })();
-    }
-}
+});
