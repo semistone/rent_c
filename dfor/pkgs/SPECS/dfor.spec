@@ -1,6 +1,6 @@
 Summary: dfor load balance library
 Name: dfor
-Version: 0.1
+Version: 0.0.1
 Release: 1
 License: GPL
 Group: Libraries

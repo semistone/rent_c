@@ -102,3 +102,7 @@ If round robin mode
 If weight mode
    Set weigt value
    It will return each record base on weight number.
+
+### ChangeLog
+Version 0.0.1
+   Init

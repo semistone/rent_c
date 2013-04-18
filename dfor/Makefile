@@ -1,17 +1,19 @@
 all:  
 	$(MAKE) -C src
+VERSION = `grep '^Version' ./README.md|head -1|awk '{print $$2}'`
 package:
 	mkdir -p pkgs/SOURCES
 	mkdir -p pkgs/BUILD
 	mkdir -p pkgs/RPMS
 	mkdir -p pkgs/SRPMS
-	mkdir -p dfor-0.1
-	cp -rf src dfor-0.1
-	cp -rf etc dfor-0.1
-	cp -rf dford dfor-0.1
-	cp -rf Makefile dfor-0.1
-	tar cfvz pkgs/SOURCES/dfor.tar.gz  dfor-0.1/
-	rm -rf dfor-0.1
+	mkdir -p dfor-$(VERSION)
+	cp -rf src dfor-$(VERSION)
+	cp -rf etc dfor-$(VERSION)
+	cp -rf dford dfor-$(VERSION)
+	cp -f Makefile dfor-$(VERSION)
+	cp -f README.md dfor-$(VERSION)
+	tar cfvz pkgs/SOURCES/dfor.tar.gz  dfor-$(VERSION)/
+	rm -rf dfor-$(VERSION)
 	rpmbuild -ba --define "_topdir `pwd`/pkgs" --clean pkgs/SPECS/dfor.spec
 install:
 	mkdir -p ${prefix}/usr/local/etc/dfor
