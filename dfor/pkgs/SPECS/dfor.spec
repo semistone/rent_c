@@ -4,7 +4,7 @@ Version: 0.0.1
 Release: 1
 License: GPL
 Group: Libraries
-Source: dfor.tar.gz
+Source: dfor.tar-%{version}.gz
 URL: https://github.com/semistone/rent_c/tree/master/dfor
 Vendor: -
 Packager: Angus Chen

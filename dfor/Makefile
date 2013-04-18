@@ -1,6 +1,6 @@
 all:  
 	$(MAKE) -C src
-VERSION = `grep '^Version' ./README.md|head -1|awk '{print $$2}'`
+VERSION = $(shell grep '^Version' ./README.md|head -1|awk '{print $$2}')
 package:
 	mkdir -p pkgs/SOURCES
 	mkdir -p pkgs/BUILD
@@ -12,8 +12,8 @@ package:
 	cp -rf dford dfor-$(VERSION)
 	cp -f Makefile dfor-$(VERSION)
 	cp -f README.md dfor-$(VERSION)
-	tar cfvz pkgs/SOURCES/dfor.tar.gz  dfor-$(VERSION)/
-	rm -rf dfor-$(VERSION)
+	tar cfvz pkgs/SOURCES/dfor.tar-$(VERSION).gz  dfor-$(VERSION)/
+	rm -rf dfor-$(VERSION)/
 	rpmbuild -ba --define "_topdir `pwd`/pkgs" --clean pkgs/SPECS/dfor.spec
 install:
 	mkdir -p ${prefix}/usr/local/etc/dfor
