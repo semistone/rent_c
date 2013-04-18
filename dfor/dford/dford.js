@@ -88,11 +88,11 @@ function check_http(name, ip, port, path, callback, last_status){//{{{
         } 
     });
     req.setTimeout(SOCKET_TIMEOUT, function(){
-        console.log('http connected and timeout');
+        console.log('http timeout');
         if(callback) callback.error(name, ip, last_status);
     });
     req.on('error', function(err) {
-        console.log('http connected and error');
+        console.log('http error');
         if(callback) callback.error(name, ip, last_status);
     });
     req.end();
