@@ -4,6 +4,7 @@ CREATE TABLE if not exists HOST(ID INTEGER PRIMARY KEY,
                   STATUS INTEGER DEFAULT 0,
                   WEIGHT INTEGER,
                   COUNT INTEGER DEFAULT 0,
+                  ADJUST INTEGER DEFAULT 0,
                   LAST_READ_TIME INTEGER DEFAULT 0,
                   MODIFIED INTEGER);
 CREATE UNIQUE INDEX if not exists IDX_HOST on HOST(NAME,IP);

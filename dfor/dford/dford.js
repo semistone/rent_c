@@ -35,23 +35,20 @@ var callback = {//{{{
     error: function(name, ip, last_status){
         console.log('connect error for name:' + name + ' ip:' + ip);
         var ts = Math.round(Date.now() / 1000);
+        db.run('update HOST set STATUS=0, MODIFIED=? where NAME=? and  IP=?', [ts, name, ip]);
         if(last_status.status == 1) {
             last_status.status = 0;
             console.log('status change to 0, name:' + name + ' ip:' + ip);
-            db.run('update HOST set STATUS=0, MODIFIED=? where NAME=? and  IP=?', [ts, name, ip]);
-        } else {
-            db.run('update HOST set MODIFIED=? where NAME=? and  IP=?', [ts, name, ip]);
         }
     },
     connect: function(name, ip, last_status){
         console.log('connect success for name:' + name + ' ip:' + ip);
         var ts = Math.round(Date.now() / 1000);
+        db.run('update HOST set STATUS=1, MODIFIED=? where NAME=? and  IP=?', [ts, name, ip]);
         if(last_status.status == 0) {
             last_status.status = 1;
+            db.run('update HOST set ADJUST = -COUNT where NAME=?', [name]);
             console.log('status change to 1, name:' + name + ' ip:' + ip);
-            db.run('update HOST set STATUS=1, MODIFIED=? where NAME=? and  IP=?', [ts, name, ip]);
-        } else {
-            db.run('update HOST set MODIFIED=? where NAME=? and  IP=?', [ts, name, ip]);
         }
     }
 };//}}}
@@ -165,7 +162,7 @@ for(var name in config){
             ip = index;
         }
         if(mode == 'weight'){
-            weight = hosts[ip].weight;
+            weight = 1 / hosts[ip].weight;
         }
         (function(){
            var insert_stmt = db.prepare("insert or replace into HOST (NAME,IP,COUNT, WEIGHT,MODIFIED) values (?,?,0,?,?)");
