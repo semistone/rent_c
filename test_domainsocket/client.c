@@ -4,7 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#define DATA "Half a league, half a league . . ."
+#include <string>
+#define DATA "example.com\n"
 
 
 int main(int argc, char *argv[])
@@ -22,7 +23,7 @@ int main(int argc, char *argv[])
         exit(1);
     }
     server.sun_family = AF_UNIX;
-    strcpy(server.sun_path, "/tmp/echo.sock");
+    strcpy(server.sun_path, "/var/run/dfor/dfor.sock");
 
 
     if (connect(sock, (struct sockaddr *) &server, sizeof(struct sockaddr_un)) < 0) {
@@ -34,6 +35,8 @@ int main(int argc, char *argv[])
         perror("writing on stream socket");
     if (read(sock, buf, sizeof(buf)) < 0)
         perror("read on stream socket");
-        printf("read data is %s", buf);
+    std::string ip = std::string(buf);
+    ip.erase(ip.find("\n") + 1);
+    printf("read data is %s", ip.c_str());
     close(sock);
 }
