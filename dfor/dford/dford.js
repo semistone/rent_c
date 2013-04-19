@@ -20,8 +20,8 @@ var net = require('net'),
 //  open sqlite
 //
 var CONF_PATH = '/usr/local/etc/dfor';
-var SOCKET_TIMEOUT = 3000;
 var DBFILE = '/var/run/dfor/cache.db';
+var SOCKET_FILE = '/var/run/dfor/dfor.sock';
 var db = undefined;
 
 
@@ -60,9 +60,8 @@ function init_server(){//{{{
             console.log('server error');
         });
     });
-    var socket_file = '/var/run/dfor/dfor.sock';
-    server.listen(socket_file, function() { //'listening' listener
-        fs.chmod(socket_file, '777');
+    server.listen(SOCKET_FILE, function() { //'listening' listener
+        fs.chmod(SOCKET_FILE, '777');
         console.log('server bound');
     });
 }//}}}
@@ -93,10 +92,10 @@ var callback = {//{{{
     }
 };//}}}
 
-function check_socket(name, ip , port, callback, last_status) {//{{{
+function check_socket(name, ip , port, callback, last_status, ttl) {//{{{
     console.log('check socket name:' + name + ' ip:' + ip + ' port:' + port);
     var socket = net.createConnection(port, ip);
-    socket.setTimeout(SOCKET_TIMEOUT);
+    socket.setTimeout(ttl);
     socket.on("error", function (err) {
         console.log("socket error: " + err);
         socket.end();
@@ -115,7 +114,7 @@ function check_socket(name, ip , port, callback, last_status) {//{{{
     });
 }//}}}
 
-function check_http(name, ip, port, path, callback, last_status){//{{{
+function check_http(name, ip, port, path, callback, last_status, ttl){//{{{
     var options = {
         hostname: ip,
         port: port,
@@ -132,7 +131,7 @@ function check_http(name, ip, port, path, callback, last_status){//{{{
             if(callback) callback.error(name, ip, last_status);
         } 
     });
-    req.setTimeout(SOCKET_TIMEOUT, function(){
+    req.setTimeout(ttl, function(){
         console.log('http timeout');
         if(callback) callback.error(name, ip, last_status);
     });
@@ -151,12 +150,12 @@ function start(name, ip, settings){//{{{
     setInterval((function() {
         var port = settings['check_port'];
         if(method == 'socket'){
-            check_socket(name, ip, port, callback, last_status);
+            check_socket(name, ip, port, callback, last_status, ttl);
         } else if (method == 'http') {
             if (port == undefined) port = 80;
             var path = settings['check_path'];
             //console.log('check http port:' + port + ' path:' + path);
-            check_http(name, ip, port, path, callback, last_status);
+            check_http(name, ip, port, path, callback, last_status, ttl);
         }
     }), ttl);
 }//}}}
