@@ -77,6 +77,9 @@ int query(std::string& hostname, std::string& ip){//{{{
         int idx = ip.find("\n");
         if (idx >= 0) {
             ip.erase(ip.find("\n"));
+        }else{
+            logger->debugStream()<<"query "<< hostname<< " return without \\n";
+            return -1;
         }
         logger->debugStream()<<"query result is ["<<ip<<"]";
     }
