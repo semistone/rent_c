@@ -2,7 +2,7 @@ CC = gcc
 #FLAGS = 
 CXXFLAGS = -fPIC
 #CFLAGS = -fPIC -g $(INCLUDES)
-LDFLAGS = -shared -ldl   -lsqlite3 -llog4cpp -fPIC
+LDFLAGS = -shared -ldl -llog4cpp -fPIC
 SOURCES= ./Hook.cc
 OBJECTS= $(SOURCES:.cc=.o)
 TARGET  = dfor.so
