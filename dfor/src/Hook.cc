@@ -73,6 +73,7 @@ int query(std::string& hostname, std::string& ip){//{{{
         logger->debugStream()<<"query "<< hostname<< " return empty";
         return -1;
     } else {
+        close(sock);
         ip = std::string(buf);
         int idx = ip.find("\n");
         if (idx >= 0) {
@@ -83,7 +84,6 @@ int query(std::string& hostname, std::string& ip){//{{{
         }
         logger->debugStream()<<"query result is ["<<ip<<"]";
     }
-    close(sock);
     return 0;
 }//}}}
 
