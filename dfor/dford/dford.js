@@ -19,7 +19,7 @@ var net = require('net'),
 //
 //  open sqlite
 //
-var CONF_PATH = '/usr/local/etc/dfor';
+var CONF_FILE = '/usr/local/etc/dfor/config.yaml';
 var DBFILE = '/var/run/dfor/cache.db';
 var SOCKET_FILE = '/var/run/dfor/dfor.sock';
 var db = undefined;
@@ -47,7 +47,6 @@ function init_server(){//{{{
                     function(err, rows){
                         if (rows == 0) {
                             console.log('return rows = 0 ');
-                            c.write('\n');
                             c.end();
                             c.destroy();
                         }
@@ -62,7 +61,7 @@ function init_server(){//{{{
     });
     server.listen(SOCKET_FILE, function() { //'listening' listener
         fs.chmod(SOCKET_FILE, '777');
-        console.log('server bound');
+        console.log('server bound on ' + SOCKET_FILE);
     });
 }//}}}
 
@@ -180,6 +179,9 @@ function clean_extra_record(name, hosts, isarray){//{{{
 function run(conffile, dbfile){//{{{
     console.log('db file in ' + dbfile);
     db = new sqlite3.Database(dbfile);
+    //
+    // start server to serve query.
+    //
     init_server();
     console.log('config file in ' + conffile);
     var config = require(conffile);
@@ -227,7 +229,6 @@ init.simple({
     logfile : '/var/log/dfor/dford.log',
     command : process.argv[3],
     runSync : function () {
-        var conffile = CONF_PATH + "/config.yaml";
-        run(conffile, DBFILE);
+        run(CONF_FILE, DBFILE);
     }
 });
