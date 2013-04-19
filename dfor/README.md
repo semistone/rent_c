@@ -104,5 +104,8 @@ If weight mode
    It will return each record base on weight number.
 
 ### ChangeLog
+Version 0.0.2
+   Use unix socket domain as client server.
+
 Version 0.0.1
    Init
