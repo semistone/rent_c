@@ -34,12 +34,13 @@ init_dfor(){//{{{
     logger->debugStream()<<"init logger";
     log4cpp::PropertyConfigurator::configure("/usr/local/etc/dfor/log4cpp.properties");
 
-    logger->debugStream()<<"check cache.db file exist";
     std::string dbfile = "/var/run/dfor/cache.db";
     FILE *fp = fopen(dbfile.c_str(), "r");
     if(fp){
         fclose(fp);
     } else {
+        is_init = false;
+        logger->debugStream()<<"check cache.db file but not exist";
         return -1; // if not exist.
     }
 
@@ -59,11 +60,11 @@ int query(std::string& hostname, std::string& ip){//{{{
     strcpy(server.sun_path, "/var/run/dfor/dfor.sock");
     if (connect(sock, (struct sockaddr *) &server, sizeof(struct sockaddr_un)) < 0) {
         close(sock);
-        logger->debugStream()<<"connecting stream socket";
+        logger->debugStream()<<"connecting stream socket but fail";
         return -1;
     }
     if (write(sock, hostname.append("\n").c_str(), hostname.length() + 1) < 0){
-        logger->debugStream()<<"write fail";
+        logger->debugStream()<<"write data into socket fail";
         close(sock);
         return -1;
     }
@@ -74,7 +75,7 @@ int query(std::string& hostname, std::string& ip){//{{{
     } else {
         ip = std::string(buf);
         ip.erase(ip.find("\n"));
-        logger->debugStream()<<"query "<< hostname<< " return ["<<ip<<"]";
+        logger->debugStream()<<"query result is ["<<ip<<"]";
     }
     close(sock);
     return 0;
@@ -119,14 +120,14 @@ struct hostent *gethostbyname(const char *name){//{{{
         if(init_dfor() != 0)
             return (*orig_gethostbyname)(name);
     }
-    logger->debugStream()<<" call gethostbyname";
+    logger->debugStream() << "call gethostbyname";
     std::string hostname = std::string(name);
     std::string ip;
     int ret = query(hostname, ip);
     struct hostent *host;
     struct in_addr *addr;
     if (ret != 0 || ip == "") {
-        logger->debugStream()<<"ip is empty";
+        logger->debugStream() << "query fail or ip is empty";
         return (*orig_gethostbyname)(name);
     } else {
         logger->debugStream()<<"ip is not empty";
@@ -151,16 +152,16 @@ int getaddrinfo(const char *node, const char *service, const struct addrinfo *hi
     if (!is_init){
         if(init_dfor() != 0) return -1;
     }
-    logger->debugStream()<<" call getaddrinfo node:"<<node;
+    logger->debugStream() << "call getaddrinfo node:"<<node;
     if (node == NULL) {
-        logger->debugStream()<<" call getaddrinfo node is empty";
+        logger->debugStream() << "call getaddrinfo node is empty";
         return (*orig_getaddrinfo)(node,service,hints,res);
     }
     std::string hostname = std::string(node);
     std::string ip;
     int ret = query(hostname, ip);
     if (ret != 0 || ip == "") {
-        logger->debugStream()<<"ip is empty";
+        logger->debugStream()<<"query fail or ip is empty";
         return (*orig_getaddrinfo)(node,service,hints,res);
     } else {
         logger->debugStream()<<"ip is not empty";
