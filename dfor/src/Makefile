@@ -3,7 +3,7 @@ CC = gcc
 CXXFLAGS = -fPIC
 #CFLAGS = -fPIC -g $(INCLUDES)
 LDFLAGS = -shared -ldl   -lsqlite3 -llog4cpp -fPIC
-SOURCES= ./DB.cc ./Hook.cc
+SOURCES= ./Hook.cc
 OBJECTS= $(SOURCES:.cc=.o)
 TARGET  = dfor.so
 # Default compile

@@ -2,22 +2,26 @@
 #define _GNU_SOURCE
 #endif
 #include <string.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <dlfcn.h>
+#include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/un.h>
+#include <unistd.h>
 #include <netdb.h>
-#include "DB.h"
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include "log4cpp/PropertyConfigurator.hh"
+#include "log4cpp/Category.hh"
 
 static struct hostent *((*orig_gethostbyname)(const char *name)) = NULL;
 static int (*orig_getaddrinfo)(const char *node, const char *service, const struct addrinfo *hints, struct addrinfo **res) = NULL;
-static dfor::DB *db = NULL;
 static log4cpp::Category* logger = &log4cpp::Category::getInstance(std::string("dfor"));
-
+static bool is_init = false;
 int 
 init_dfor(){//{{{
+    is_init = true;
     if (orig_getaddrinfo == NULL)
     {
          orig_getaddrinfo = (int (*)(const char *node, const char *service, const struct addrinfo *hints, struct addrinfo **res))
@@ -39,8 +43,40 @@ init_dfor(){//{{{
         return -1; // if not exist.
     }
 
-    logger->debugStream()<<"init sqlite db";
-    db = new dfor::DB(dbfile);
+    return 0;
+}//}}}
+
+int query(std::string& hostname, std::string& ip){//{{{
+    int sock;
+    struct sockaddr_un server;
+    char buf[1024];
+    sock = socket(AF_UNIX, SOCK_STREAM, 0);
+    if (sock < 0) {
+        logger->debugStream()<<"opening stream socket";
+        return -1;
+    }
+    server.sun_family = AF_UNIX;
+    strcpy(server.sun_path, "/var/run/dfor/dfor.sock");
+    if (connect(sock, (struct sockaddr *) &server, sizeof(struct sockaddr_un)) < 0) {
+        close(sock);
+        logger->debugStream()<<"connecting stream socket";
+        return -1;
+    }
+    if (write(sock, hostname.append("\n").c_str(), hostname.length() + 1) < 0){
+        logger->debugStream()<<"write fail";
+        close(sock);
+        return -1;
+    }
+    if (read(sock, buf, sizeof(buf)) < 0){
+        close(sock);
+        logger->debugStream()<<"query "<< hostname<< " return empty";
+        return -1;
+    } else {
+        ip = std::string(buf);
+        ip.erase(ip.find("\n"));
+        logger->debugStream()<<"query "<< hostname<< " return ["<<ip<<"]";
+    }
+    close(sock);
     return 0;
 }//}}}
 
@@ -79,16 +115,17 @@ void dump_addr(addrinfo* res, const char* service){//{{{
 
 struct hostent *gethostbyname(const char *name){//{{{
     // init 
-    if (db == NULL){
+    if (!is_init){
         if(init_dfor() != 0)
             return (*orig_gethostbyname)(name);
     }
     logger->debugStream()<<" call gethostbyname";
     std::string hostname = std::string(name);
-    std::string ip = db->query(hostname);
+    std::string ip;
+    int ret = query(hostname, ip);
     struct hostent *host;
     struct in_addr *addr;
-    if (ip == "") {
+    if (ret != 0 || ip == "") {
         logger->debugStream()<<"ip is empty";
         return (*orig_gethostbyname)(name);
     } else {
@@ -111,7 +148,7 @@ int getaddrinfo(const char *node, const char *service, const struct addrinfo *hi
     // init 
     //dump_addr(*res, service);
     //dump_addr((struct addrinfo*)hints, service);
-    if (db == NULL){
+    if (!is_init){
         if(init_dfor() != 0) return -1;
     }
     logger->debugStream()<<" call getaddrinfo node:"<<node;
@@ -120,8 +157,9 @@ int getaddrinfo(const char *node, const char *service, const struct addrinfo *hi
         return (*orig_getaddrinfo)(node,service,hints,res);
     }
     std::string hostname = std::string(node);
-    std::string ip = db->query(hostname);
-    if (ip == "") {
+    std::string ip;
+    int ret = query(hostname, ip);
+    if (ret != 0 || ip == "") {
         logger->debugStream()<<"ip is empty";
         return (*orig_getaddrinfo)(node,service,hints,res);
     } else {
@@ -146,7 +184,6 @@ int getaddrinfo(const char *node, const char *service, const struct addrinfo *hi
         }
         sock->sin_addr.s_addr = inet_addr(ip.c_str());
         *res = addr;
-        db->updateCount(hostname, ip);
         //dump_addr(*res, service);
         return 0;
     }

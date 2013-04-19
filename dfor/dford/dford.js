@@ -22,6 +22,48 @@ var CONF_PATH = '/usr/local/etc/dfor';
 var SOCKET_TIMEOUT = 3000;
 var DBFILE = '/var/run/dfor/cache.db';
 var db = undefined;
+
+
+function init_server(){//{{{
+    var server = net.createServer(function(c) { //'connection' listener
+        console.log('server connected');
+        c.on('data', function(name) {
+            name = new String(name);
+            var index = name.indexOf('\n')
+            name = name.substring(0, index);
+            console.log('query ' + name);
+            var ts = Math.round(Date.now() / 1000);
+            db.each("select IP  from HOST where NAME = ? and STATUS='1' order by (COUNT + ADJUST ) * WEIGHT,ID asc limit 1",
+                    [name],
+                    function(err, row) {
+                        db.run("update HOST set COUNT=COUNT+1,LAST_READ_TIME=? where NAME=? and IP=?",[ts, name, row.IP]);
+                        console.log('return ' + row.IP);
+                        c.write(row.IP);
+                        c.write('\n');
+                        c.end();
+                        c.destroy();
+                    },
+                    function(err, rows){
+                        if (rows == 0) {
+                            console.log('return rows = 0 ');
+                            c.write('\n');
+                            c.end();
+                            c.destroy();
+                        }
+                    });
+        });
+        c.on('close', function() {
+            console.log('server disconnected');
+        });
+        c.on('error', function(e) {
+            console.log('server error');
+        });
+    });
+    server.listen('/var/run/dfor/dfor.sock', function() { //'listening' listener
+        console.log('server bound');
+    });
+}//}}}
+
 //
 // open config file
 //
@@ -136,6 +178,7 @@ function clean_extra_record(name, hosts, isarray){//{{{
 function run(conffile, dbfile){//{{{
     console.log('db file in ' + dbfile);
     db = new sqlite3.Database(dbfile);
+    init_server();
     console.log('config file in ' + conffile);
     var config = require(conffile);
     for(var name in config){ 

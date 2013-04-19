@@ -12,7 +12,7 @@ Packager: Angus Chen
 #BuildRequires: sqlite-devel
 Requires: log4cpp
 Requires: sqlite 
-#Requires: node 
+Requires: nodejs
 BuildRoot: %{_tmpdir}/%{name}-%{version}-%{release}
 %description
 name resolve load balance library.
