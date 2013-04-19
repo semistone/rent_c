@@ -13,6 +13,7 @@ var net = require('net'),
     _ = require('underscore')._,
     yaml = require("js-yaml"),
     sqlite3 = require('sqlite3'),
+    fs = require('fs'),
     init = require('simple-daemon');
 
 //
@@ -59,7 +60,9 @@ function init_server(){//{{{
             console.log('server error');
         });
     });
-    server.listen('/var/run/dfor/dfor.sock', function() { //'listening' listener
+    var socket_file = '/var/run/dfor/dfor.sock';
+    server.listen(socket_file, function() { //'listening' listener
+        fs.chmod(socket_file, '777');
         console.log('server bound');
     });
 }//}}}
