@@ -214,18 +214,18 @@ function run(conffile, dbfile){//{{{
             }
             (function(){
                console.log('init for ip ' + ip);
-               var insert_stmt = db.prepare("insert or replace into HOST (NAME,IP,COUNT, WEIGHT,MODIFIED) values (?,?,0,?,?)");
-               var ts = Math.round(Date.now() / 1000);
                var _name = name, _ip = ip, _settings = config[name];
-               insert_stmt.run([name, ip, weight, ts], function(){
-                   var timeout = (Math.random() * 10000) % _settings.ttl;
-                   console.log('wait timeout ' + timeout); // random shift tasks
-                   setTimeout(function(){
-                       start(_name, _ip, _settings);        
-                   }, timeout);
-
+               var ts = Math.round(Date.now() / 1000);
+               db.serialize(function() {
+                   db.run('insert or ignore into HOST (NAME,IP,COUNT) values (?,?,0)',[name, ip]);
+                   db.run('update HOST set WEIGHT=?, MODIFIED=? where NAME=? and IP=? ',[weight, ts, name, ip], function(){
+                       var timeout = (Math.random() * 10000) % _settings.ttl;
+                       console.log('wait timeout ' + timeout); // random shift tasks
+                       setTimeout(function(){
+                           start(_name, _ip, _settings);        
+                       }, timeout);
+                   });
                });
-               insert_stmt.finalize();
             })();
         }
     }
