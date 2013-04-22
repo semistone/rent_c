@@ -28,6 +28,7 @@ var db = undefined;
 function init_server(){//{{{
     var server = net.createServer(function(c) { //'connection' listener
         console.log('server connected');
+        c.setTimeout(1000);
         c.on('data', function(name) {
             name = new String(name);
             var index = name.indexOf('\n')
@@ -39,8 +40,7 @@ function init_server(){//{{{
                     function(err, row) {
                         db.run("update HOST set COUNT=COUNT+1,LAST_READ_TIME=? where NAME=? and IP=?",[ts, name, row.IP]);
                         console.log('return ' + row.IP);
-                        c.write(row.IP);
-                        c.write('\n');
+                        c.write(row.IP + '\n');
                         c.end();
                         c.destroy();
                     },
@@ -54,6 +54,11 @@ function init_server(){//{{{
         });
         c.on('close', function() {
             console.log('server disconnected');
+        });
+        c.on('timeout', function() {
+            console.log('server timeout');
+            socket.end();
+            socket.destroy();
         });
         c.on('error', function(e) {
             console.log('server error');
@@ -213,7 +218,12 @@ function run(conffile, dbfile){//{{{
                var ts = Math.round(Date.now() / 1000);
                var _name = name, _ip = ip, _settings = config[name];
                insert_stmt.run([name, ip, weight, ts], function(){
-                   start(_name, _ip, _settings);        
+                   var timeout = (Math.random() * 10000) % _settings.ttl;
+                   console.log('wait timeout ' + timeout); // random shift tasks
+                   setTimeout(function(){
+                       start(_name, _ip, _settings);        
+                   }, timeout);
+
                });
                insert_stmt.finalize();
             })();
